@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import api from "../utils/api";
+import React from "react";
+// import api from "../utils/api";
 import Card from "./Card";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 

@@ -1,4 +1,6 @@
 import React from "react";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 import "../index.css";
 import Header from "./Header";
 import Main from "./Main";
@@ -10,8 +12,15 @@ import EditProfilePopup from "./EditProfilePopup";
 import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
 import DeleteCardPopup from "./DeleteCardPopup";
+import Register from "./Register";
+import Login from "./Login";
+import imageInfoTooltipOk from "../images/status-ok.svg";
+import imageInfoTooltipError from "../images/status-error.svg";
+import InfoTooltip from "./InfoTooltip";
+import * as auth from "../auth.js";
 
 function App() {
+  //переменные попапов
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] =
     React.useState(false);
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
@@ -20,13 +29,22 @@ function App() {
   const [selectedCard, setSelectedCard] = React.useState({});
   const [isDeleteCardPopupOpen, setIsDeleteCardPopupOpen] =
     React.useState(false);
+  const [isInfoTooltipOpenOk, setIsInfoTooltipOpenOk] = React.useState(false);
+  const [isInfoTooltipOpenError, setIsInfoTooltipOpenError] =
+    React.useState(false);
 
   const [infoCardForDelete, setinfoCardForDelete] = React.useState({});
 
   const [loading, setLoading] = React.useState(false);
 
   const [currentUser, setCurrentUser] = React.useState({});
+  const [userEmail, setUserEmail] = React.useState("");
   const [cards, setCards] = React.useState([]);
+
+  const navigate = useNavigate();
+
+  /////
+  // const [loggedIn, setLoggedIn] = React.useState(true);
 
   //загрузка карточек и данных о пользователе при первоначальной отрисовке
   React.useEffect(() => {
@@ -65,6 +83,8 @@ function App() {
     setIsAddPlacePopupOpen(false);
     setSelectedCard({ ...selectedCard, isActive: false });
     setIsDeleteCardPopupOpen(false);
+    setIsInfoTooltipOpenOk(false);
+    setIsInfoTooltipOpenError(false);
   }
 
   function handleCardClick({ name, link, isActive }) {
@@ -176,7 +196,9 @@ function App() {
       isEditAvatarPopupOpen ||
       isEditProfilePopupOpen ||
       isAddPlacePopupOpen ||
-      selectedCard
+      selectedCard ||
+      isInfoTooltipOpenOk ||
+      isInfoTooltipOpenError
     ) {
       document.addEventListener("keydown", handleEscape);
     }
@@ -190,25 +212,94 @@ function App() {
     selectedCard,
   ]);
 
+  //переменная наличия токена
+  const [loggedIn, setLoggedIn] = React.useState(false);
+
+  const handleLogin = () => {
+    setLoggedIn(true);
+  };
+
+  //проверка токена при первой отрисовке
+  React.useEffect(() => {
+    handleTokenCheck();
+  }, []);
+
+  const handleTokenCheck = () => {
+    if (localStorage.getItem("jwt")) {
+      const jwt = localStorage.getItem("jwt");
+      console.log(jwt);
+      auth.checkToken(jwt).then((res) => {
+        setLoggedIn(true);
+        setUserEmail(res.data.email);
+        console.log(userEmail);
+        navigate("/", { replace: true });
+      });
+    }
+  };
+
   return (
     <div className="page">
       <CurrentUserContext.Provider value={currentUser}>
-        <Header />
-        <Main
-          setinfoCardForDelete={setinfoCardForDelete}
-          openDeleteCardPopup={setIsDeleteCardPopupOpen}
-          cards={cards}
-          onCardDelete={handleCardDelete}
-          onCardLike={handleCardLike}
-          onCardClick={handleCardClick}
-          onEditProfile={handleEditProfileClick}
-          onAddPlace={handleAddPlaceClick}
-          onEditAvatar={handleEditAvatarClick}
-        />
+        {loggedIn && (
+          <Header
+            linkButton={{ name: "Выйти", link: "/sign-in" }}
+            loggedIn={loggedIn}
+            setLoggedIn={setLoggedIn}
+            email={userEmail}
+          />
+        )}
+        <Routes>
+          <Route
+            path="/sign-up"
+            element={
+              <Register
+                setIsInfoTooltipOpenOk={setIsInfoTooltipOpenOk}
+                setIsInfoTooltipOpenError={setIsInfoTooltipOpenError}
+              />
+            }
+          />
+          <Route
+            path="/sign-in"
+            element={<Login handleLogin={handleLogin} />}
+          />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute
+                element={Main}
+                setinfoCardForDelete={setinfoCardForDelete}
+                openDeleteCardPopup={setIsDeleteCardPopupOpen}
+                cards={cards}
+                onCardDelete={handleCardDelete}
+                onCardLike={handleCardLike}
+                onCardClick={handleCardClick}
+                onEditProfile={handleEditProfileClick}
+                onAddPlace={handleAddPlaceClick}
+                onEditAvatar={handleEditAvatarClick}
+                loggedIn={loggedIn}
+              />
+            }
+          />
+        </Routes>
         <Footer />
 
-        {/* попап изменения аватара */}
+        <InfoTooltip
+          isOpen={isInfoTooltipOpenOk}
+          onClose={closeAllPopups}
+          closeByOverlay={closeByOverlay}
+          image={imageInfoTooltipOk}
+          title="Вы успешно зарегистрировались"
+        />
 
+        <InfoTooltip
+          isOpen={isInfoTooltipOpenError}
+          onClose={closeAllPopups}
+          closeByOverlay={closeByOverlay}
+          image={imageInfoTooltipError}
+          title="Что-то пошло не так! Попробуйте ещё раз."
+        />
+
+        {/* попап изменения аватара */}
         <EditAvatarPopup
           loading={loading}
           onUpdateAvatar={handleSubmitAvatar}
