@@ -1,34 +1,47 @@
-function PopupWithForm(props) {
+import { usePopupClose } from "../hooks/usePopupClose";
+
+function PopupWithForm({
+  closeByOverlay,
+  isOpen,
+  name,
+  onClose,
+  onSubmit,
+  title,
+  nameButton,
+  children,
+  loading,
+}) {
+
+  usePopupClose(isOpen, onClose);
   return (
     <div
-      onMouseDown={props.closeByOverlay}
+      onMouseDown={closeByOverlay}
       className={
-        props.isOpen
-          ? `popup popup_type_${props.name} popup_opened`
-          : `popup popup_type_${props.name}`
+        isOpen
+          ? `popup popup_type_${name} popup_opened`
+          : `popup popup_type_${name}`
       }
     >
       <div className="popup__container">
         <button
-          onClick={props.onClose}
+          onClick={onClose}
           type="button"
           aria-label="Закрыть окно редактирования"
-          className={`popup__close-icon popup__close-icon_type_${props.name}`}
+          className={`popup__close-icon popup__close-icon_type_${name}`}
         />
-        <h2 className="popup__title">{props.title}</h2>
+        <h2 className="popup__title">{title}</h2>
         <form
-          onSubmit={props.onSubmit}
-          name={props.name}
-          className={`popup__form popup__form-${props.name}`}
-          noValidate=""
+          onSubmit={onSubmit}
+          name={name}
+          className={`popup__form popup__form-${name}`}
         >
-          {props.children}
+          {children}
 
           <button
             aria-label="Сохранить"
-            className={`popup__submit-button popup__submit-button_type_${props.name}`}
+            className={`popup__submit-button popup__submit-button_type_${name}`}
           >
-            {props.loading ? "Сохранение..." : props.nameButton}
+            {loading ? "Сохранение..." : nameButton}
           </button>
         </form>
       </div>

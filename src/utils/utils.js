@@ -1,17 +1,14 @@
-export function handleSubmit(
-  request,
-  popupInstance,
-  loadingText = "Сохранение..."
-) {
-  popupInstance.renderLoading(true, loadingText);
-  request()
-    .then(() => {
-      popupInstance.close();
-    })
-    .catch((err) => {
-      console.log(`Ошибка: ${err}`);
-    })
-    .finally(() => {
-      popupInstance.renderLoading(false);
-    });
-}
+
+// можно сделать универсальную функцию, которая принимает функцию запроса
+// export function handleSubmit(request) {
+//   // изменяем текст кнопки до вызова запроса
+//   setLoading(true);
+//   request()
+//     // закрывать попап нужно только в `then`
+//     .then(closeAllPopups)
+//     // в каждом запросе нужно ловить ошибку
+//     // console.error обычно используется для логирования ошибок, если никакой другой обработки ошибки нет
+//     .catch(console.error)
+//     // в каждом запросе в `finally` нужно возвращать обратно начальный текст кнопки
+//     .finally(() => setLoading(false));
+// }

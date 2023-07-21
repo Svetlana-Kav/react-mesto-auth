@@ -1,20 +1,26 @@
 import React from "react";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 
-function Card(props) {
+function Card({
+  onCardClick,
+  card,
+  onCardLike,
+  openDeleteCardPopup,
+  setinfoCardForDelete,
+}) {
   const currentUser = React.useContext(CurrentUserContext);
 
   function handleClick() {
-    props.onCardClick({
-      name: props.card.name,
-      link: props.card.link,
+    onCardClick({
+      name: card.name,
+      link: card.link,
       isActive: true,
     });
   }
 
-  const isOwn = props.card.owner._id === currentUser._id;
+  const isOwn = card.owner._id === currentUser._id;
 
-  const isLiked = props.card.likes.some((i) => i._id === currentUser._id);
+  const isLiked = card.likes.some((i) => i._id === currentUser._id);
 
   // Создаём переменную, которую после зададим в `className` для кнопки лайка
   const cardLikeButtonClassName = `element__like-button ${
@@ -22,12 +28,12 @@ function Card(props) {
   }`;
 
   function handleLike() {
-    props.onCardLike(props.card);
+    onCardLike(card);
   }
 
   function handleDelete() {
-    props.openDeleteCardPopup(true);
-    props.setinfoCardForDelete(props.card);
+    openDeleteCardPopup(true);
+    setinfoCardForDelete(card);
   }
 
   return (
@@ -42,10 +48,10 @@ function Card(props) {
       <img
         onClick={handleClick}
         className="element__image"
-        src={props.card.link}
-        alt={props.card.name}
+        src={card.link}
+        alt={card.name}
       />
-      <h2 className="element__text">{props.card.name}</h2>
+      <h2 className="element__text">{card.name}</h2>
       <div className="element__like">
         <button
           onClick={handleLike}
@@ -53,7 +59,7 @@ function Card(props) {
           aria-label="Поставить лайк"
           className={cardLikeButtonClassName}
         />
-        <p className="element__sum-likes">{props.card.likes.length}</p>
+        <p className="element__sum-likes">{card.likes.length}</p>
       </div>
     </article>
   );

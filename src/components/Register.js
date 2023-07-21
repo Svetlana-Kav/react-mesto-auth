@@ -1,45 +1,31 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Header from "./Header";
-import * as auth from "../auth.js";
+import * as auth from "../utils/auth.js";
+import { useForm } from "../hooks/useForm";
 
-function Register(props) {
-  const [formValue, setFormValue] = useState({
-    email: "",
-    password: "",
-  });
+function Register({setIsInfoTooltipOpenOk,setIsInfoTooltipOpenError}) {
+
+  const {values, handleChange, setValues} = useForm({});
 
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormValue({
-      ...formValue,
-      [name]: value,
-    });
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    auth.register(formValue.password, formValue.email)
-    .then((res) => {
-        if (res.status === 200 || res.status === 201) {
-          setFormValue({
-            email: "",
-            password: "",
-          });
-          props.setIsInfoTooltipOpenOk(true);
-          navigate("/sign-in");
-        } else {
-          return Promise.reject(`Что-то пошло не так: ${res.status}`);
-      }
-    }
-    )
-    .catch((err) => {
-      props.setIsInfoTooltipOpenError(true);
-      navigate("/sign-up");
-    });
+    auth
+      .register(values.password, values.email)
+      .then((res) => {
+        setValues({
+          email: "",
+          password: "",
+        });
+        setIsInfoTooltipOpenOk(true);
+        navigate("/sign-in");
+      })
+      .catch((err) => {
+        setIsInfoTooltipOpenError(true);
+        navigate("/sign-up");
+      });
   };
 
   return (
@@ -54,7 +40,7 @@ function Register(props) {
               className="form__input"
               placeholder="Email"
               name="email"
-              value={formValue.email}
+              value={values.email}
               required=""
               type="email"
             />
@@ -64,7 +50,7 @@ function Register(props) {
               className="form__input"
               placeholder="Пароль"
               name="password"
-              value={formValue.password}
+              value={values.password}
               required=""
               minLength={2}
               maxLength={40}

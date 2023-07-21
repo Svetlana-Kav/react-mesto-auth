@@ -1,45 +1,40 @@
-import React, { useState } from "react";
+import React from "react";
 import PopupWithForm from "./PopupWithForm";
+import { useForm } from "../hooks/useForm";
 
-function AddPlacePopup(props) {
-  const [nameCard, setNameCard] = useState("");
-  const [linkCard, setLinkCard] = useState("");
+function AddPlacePopup({
+  isOpen,
+  onAddPlace,
+  loading,
+  onClose,
+  closeByOverlay,
+}) {
+  const { values, handleChange, setValues } = useForm({});
 
   React.useEffect(() => {
-    setNameCard("");
-    setLinkCard("");
-  }, [props.isOpen]);
+    setValues({ ...values, name: "", link: "" });
+  }, [isOpen]);
 
-  function handleChangeName(e) {
-    setNameCard(e.target.value);
-  }
-
-  function handleChangeLink(e) {
-    setLinkCard(e.target.value);
-  }
 
   function handleSubmit(e) {
     e.preventDefault();
-    props.onAddPlace({
-      name: nameCard,
-      link: linkCard,
-    });
+    onAddPlace(values);
   }
 
   return (
     <PopupWithForm
-      loading={props.loading}
+      loading={loading}
       onSubmit={handleSubmit}
-      isOpen={props.isOpen}
-      onClose={props.onClose}
-      closeByOverlay={props.closeByOverlay}
+      isOpen={isOpen}
+      onClose={onClose}
+      closeByOverlay={closeByOverlay}
       name="add-card"
       title="Новое место"
       nameButton="Создать"
     >
       <label className="popup__form-field">
         <input
-          onChange={handleChangeName}
+          onChange={handleChange}
           name="name"
           id="input-name-card"
           minLength={2}
@@ -48,20 +43,20 @@ function AddPlacePopup(props) {
           required=""
           className="popup__input popup__input_type_name-card"
           type="text"
-          value={nameCard}
+          value={values.name}
         />
         <span className="input-name-card-error popup__form-input-error" />
       </label>
       <label className="popup__form-field">
         <input
-          onChange={handleChangeLink}
+          onChange={handleChange}
           name="link"
           id="input-link"
           placeholder="Ссылка на картинку"
           required=""
           className="popup__input popup__input_type_link-image"
           type="url"
-          value={linkCard}
+          value={values.link}
         />
         <span className="input-link-error popup__form-input-error" />
       </label>

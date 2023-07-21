@@ -1,59 +1,59 @@
 import React from "react";
 import PopupWithForm from "./PopupWithForm";
 import CurrentUserContext from "../contexts/CurrentUserContext";
+import { useForm } from "../hooks/useForm";
 
-function EditProfilePopup(props) {
+function EditProfilePopup({
+  isOpen,
+  loading,
+  onClose,
+  closeByOverlay,
+  onUpdateUser,
+}) {
+  const { values, handleChange, setValues } = useForm({});
+
+
   // Подписка на контекст
   const currentUser = React.useContext(CurrentUserContext);
-  const [name, setName] = React.useState("");
-  const [description, setDescription] = React.useState("");
 
   // После загрузки текущего пользователя из API
   // его данные будут использованы в управляемых компонентах.
   React.useEffect(() => {
-    if (props.isOpen) {
-      setName(currentUser.name);
-      setDescription(currentUser.about);
+    if (isOpen) {
+      setValues({
+        ...values,
+        name: currentUser.name,
+        about: currentUser.about,
+      });
     }
-  }, [currentUser, props.isOpen]);
-
-  function handleInputName(evt) {
-    setName(evt.target.value);
-  }
-
-  function handleInputDescription(evt) {
-    setDescription(evt.target.value);
-  }
+  }, [currentUser, isOpen]);
 
   function handleSubmit(e) {
     // Запрещаем браузеру переходить по адресу формы
     e.preventDefault();
 
     // Передаём значения управляемых компонентов во внешний обработчик
-    props.onUpdateUser({
-      name,
-      about: description,
-    });
+    onUpdateUser(values);
   }
 
   return (
     <PopupWithForm
-      loading={props.loading}
+      loading={loading}
       onSubmit={handleSubmit}
-      isOpen={props.isOpen}
-      onClose={props.onClose}
-      closeByOverlay={props.closeByOverlay}
+      isOpen={isOpen}
+      onClose={onClose}
+      closeByOverlay={closeByOverlay}
       name="edit-profile"
       title="Редактировать профиль"
       nameButton="Сохранить"
     >
       <label className="popup__form-field">
         <input
-          onChange={handleInputName}
-          name="nameUser"
+          onChange={handleChange}
+          name="name"
           id="input-name"
           placeholder="Имя"
-          value={name}
+          value={values.name}
           required=""
           minLength={2}
           maxLength={40}
@@ -64,11 +64,11 @@ function EditProfilePopup(props) {
       </label>
       <label className="popup__form-field">
         <input
-          onChange={handleInputDescription}
-          name="personalInfo"
+          onChange={handleChange}
+          name="about"
           id="input-info"
           placeholder="О себе"
-          value={description}
+          value={values.about}
           required=""
           minLength={2}
           maxLength={200}

@@ -17,7 +17,8 @@ import Login from "./Login";
 import imageInfoTooltipOk from "../images/status-ok.svg";
 import imageInfoTooltipError from "../images/status-error.svg";
 import InfoTooltip from "./InfoTooltip";
-import * as auth from "../auth.js";
+import * as auth from "../utils/auth.js";
+// import { handleSubmit } from "../utils/utils";
 
 function App() {
   //переменные попапов
@@ -43,8 +44,7 @@ function App() {
 
   const navigate = useNavigate();
 
-  /////
-  // const [loggedIn, setLoggedIn] = React.useState(true);
+  const [loggedIn, setLoggedIn] = React.useState(true);
 
   //загрузка карточек и данных о пользователе при первоначальной отрисовке
   React.useEffect(() => {
@@ -90,18 +90,6 @@ function App() {
   function handleCardClick({ name, link, isActive }) {
     setSelectedCard({ name, link, isActive });
   }
-  //закрытие на оверлей
-  function closeByOverlay(evt) {
-    if (evt.target === evt.currentTarget) {
-      closeAllPopups();
-    }
-  }
-  //закрытие на Escape
-  function handleEscape(evt) {
-    if (evt.key === "Escape") {
-      closeAllPopups();
-    }
-  }
 
   //добавление и удаление ЛАЙКОВ
   const handleCardLike = (card) => {
@@ -119,101 +107,61 @@ function App() {
       });
   };
 
-  //удаление КАРТОЧЕК
-  const handleCardDelete = () => {
+  function handleSubmit(request) {
+    // изменяем текст кнопки до вызова запроса
     setLoading(true);
-    api
-      .deleteCard(infoCardForDelete._id)
-      .then((cards) => {
+    request()
+      // закрывать попап нужно только в `then`
+      .then(closeAllPopups)
+      // в каждом запросе нужно ловить ошибку
+      // console.error обычно используется для логирования ошибок, если никакой другой обработки ошибки нет
+      .catch(console.error)
+      // в каждом запросе в `finally` нужно возвращать обратно начальный текст кнопки
+      .finally(() => setLoading(false));
+  }
+
+  //удаление КАРТОЧЕК
+  function handleCardDelete() {
+    function makeRequest() {
+      return api.deleteCard(infoCardForDelete._id).then((cards) => {
         setCards((state) =>
           state.filter((c) => c._id !== infoCardForDelete._id)
         );
-      })
-      .then((data) => closeAllPopups())
-      .catch((err) => {
-        console.log(`${err.status} ${err.text}`);
-      })
-      .finally(() => {
-        setLoading(false);
       });
-  };
+    }
+    handleSubmit(makeRequest);
+  }
 
   //САБМИТ РЕДАКТИРОВАНИЯ ПРОФИЛЯ
-
   function handleUpdateUser({ name, about }) {
-    setLoading(true);
-    api
-      .editUserInfo({ name, about })
-      .then((data) => {
+    function makeRequest() {
+      return api.editUserInfo({ name, about }).then((data) => {
         setCurrentUser(data);
-      })
-      .then((data) => closeAllPopups())
-      .catch((err) => {
-        console.log(`${err.status} ${err.text}`);
-      })
-      .finally(() => {
-        setLoading(false);
       });
+    }
+    handleSubmit(makeRequest);
   }
 
   //САБМИТ РЕДАКТИРОВАНИЯ АВАТАРА
-
   function handleSubmitAvatar({ avatar }) {
-    setLoading(true);
-    api
-      .editUserAvatar({ avatar })
-      .then((data) => {
+    function makeRequest() {
+      return api.editUserAvatar({ avatar }).then((data) => {
         setCurrentUser(data);
-      })
-      .then((data) => closeAllPopups())
-      .catch((err) => {
-        console.log(`${err.status} ${err.text}`);
-      })
-      .finally(() => {
-        setLoading(false);
       });
-  }
-
-  //САБМИТ ДОБАВЛЕНИЯ КАРТОЧКИ
-  function handleAddPlaceSubmit(data) {
-    setLoading(true);
-    api
-      .addCard(data)
-      .then((newCard) => {
-        setCards([newCard, ...cards]);
-      })
-      .then((data) => closeAllPopups())
-      .catch((err) => {
-        console.log(`${err.status} ${err.text}`);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }
-
-  React.useEffect(() => {
-    if (
-      isEditAvatarPopupOpen ||
-      isEditProfilePopupOpen ||
-      isAddPlacePopupOpen ||
-      selectedCard ||
-      isInfoTooltipOpenOk ||
-      isInfoTooltipOpenError
-    ) {
-      document.addEventListener("keydown", handleEscape);
     }
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [
-    isEditAvatarPopupOpen,
-    isEditProfilePopupOpen,
-    isAddPlacePopupOpen,
-    selectedCard,
-  ]);
+    handleSubmit(makeRequest);
+  }
 
-  //переменная наличия токена
-  const [loggedIn, setLoggedIn] = React.useState(false);
+  //САБМИТ ДОБАВЛЕНИЯ НОВОЙ КАРТОЧКИ
+  function handleAddPlaceSubmit(data) {
+    function makeRequest() {
+      return api.addCard(data).then((newCard) => {
+        setCards([newCard, ...cards]);
+      });
+    }
+    handleSubmit(makeRequest);
+  }
+
 
   const handleLogin = () => {
     setLoggedIn(true);
@@ -225,15 +173,22 @@ function App() {
   }, []);
 
   const handleTokenCheck = () => {
-    if (localStorage.getItem("jwt")) {
-      const jwt = localStorage.getItem("jwt");
-      console.log(jwt);
-      auth.checkToken(jwt).then((res) => {
-        setLoggedIn(true);
-        setUserEmail(res.data.email);
-        console.log(userEmail);
-        navigate("/", { replace: true });
-      });
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) {
+      auth
+        .checkToken(jwt)
+        .then((res) => {
+          setUserEmail(res.data.email);
+        })
+        .then((res) => {
+          setLoggedIn(true);
+        })
+        .then((res) => {
+          navigate("/", { replace: true });
+        })
+        .catch((err) => {
+          console.log(`${err.status} ${err.text}`);
+        });
     }
   };
 
@@ -270,7 +225,6 @@ function App() {
                 setinfoCardForDelete={setinfoCardForDelete}
                 openDeleteCardPopup={setIsDeleteCardPopupOpen}
                 cards={cards}
-                onCardDelete={handleCardDelete}
                 onCardLike={handleCardLike}
                 onCardClick={handleCardClick}
                 onEditProfile={handleEditProfileClick}
@@ -286,7 +240,6 @@ function App() {
         <InfoTooltip
           isOpen={isInfoTooltipOpenOk}
           onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
           image={imageInfoTooltipOk}
           title="Вы успешно зарегистрировались"
         />
@@ -294,7 +247,6 @@ function App() {
         <InfoTooltip
           isOpen={isInfoTooltipOpenError}
           onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
           image={imageInfoTooltipError}
           title="Что-то пошло не так! Попробуйте ещё раз."
         />
@@ -305,7 +257,6 @@ function App() {
           onUpdateAvatar={handleSubmitAvatar}
           isOpen={isEditAvatarPopupOpen}
           onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
         />
 
         {/* попап редактирования профиля */}
@@ -315,8 +266,7 @@ function App() {
           onUpdateUser={handleUpdateUser}
           isOpen={isEditProfilePopupOpen}
           onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
-        ></EditProfilePopup>
+        />
 
         {/* попап добавления карточки */}
 
@@ -325,8 +275,7 @@ function App() {
           onAddPlace={handleAddPlaceSubmit}
           isOpen={isAddPlacePopupOpen}
           onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
-        ></AddPlacePopup>
+        />
 
         {/*попап удаления карточки*/}
 
@@ -335,19 +284,14 @@ function App() {
           handleCardDelete={handleCardDelete}
           isOpen={isDeleteCardPopupOpen}
           onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
           name="delete-card"
           title="Вы уверены?"
           nameButton="Да"
-        ></DeleteCardPopup>
+        />
 
         {/* попап увеличения картинки */}
 
-        <ImagePopup
-          card={selectedCard}
-          onClose={closeAllPopups}
-          closeByOverlay={closeByOverlay}
-        />
+        <ImagePopup card={selectedCard} onClose={closeAllPopups} />
       </CurrentUserContext.Provider>
     </div>
   );

@@ -1,32 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
-import * as auth from "../auth.js";
+import * as auth from "../utils/auth.js";
+import { useForm } from "../hooks/useForm";
 
 function Login({ handleLogin }) {
-  const [formValue, setFormValue] = useState({
-    email: "",
-    password: "",
-  });
+  const { values, handleChange, setValues } = useForm({});
 
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormValue({
-      ...formValue,
-      [name]: value,
-    });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     auth
-      .authorize(formValue.password, formValue.email)
+      .authorize(values.password, values.email)
       .then((data) => {
         if (data.token) {
-          setFormValue({ email: "", password: "" });
+          setValues({ email: "", password: "" });
           handleLogin();
           navigate("/", { replace: true });
         }
@@ -48,7 +37,7 @@ function Login({ handleLogin }) {
               name="email"
               required=""
               type="email"
-              value={formValue.email}
+              value={values.email}
             />
             <input
               type="password"
@@ -56,7 +45,7 @@ function Login({ handleLogin }) {
               placeholder="Пароль"
               name="password"
               required=""
-              value={formValue.password}
+              value={values.password}
               onChange={handleChange}
             />
             <button className="form__button">Войти</button>

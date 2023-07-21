@@ -1,16 +1,24 @@
 import React from "react";
-// import api from "../utils/api";
 import Card from "./Card";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 
-function Main(props) {
+function Main({
+  setinfoCardForDelete,
+  openDeleteCardPopup,
+  cards,
+  onCardLike,
+  onCardClick,
+  onEditProfile,
+  onAddPlace,
+  onEditAvatar,
+}) {
   const currentUser = React.useContext(CurrentUserContext);
 
   return (
     <main className="main">
       <section className="profile">
         <button
-          onClick={props.onEditAvatar}
+          onClick={onEditAvatar}
           className="profile__button-edit-avatar"
           aria-label="Редактировать фото пользователя"
           type="button"
@@ -20,7 +28,7 @@ function Main(props) {
         <div className="profile__info">
           <h1 className="profile__name">{currentUser.name}</h1>
           <button
-            onClick={props.onEditProfile}
+            onClick={onEditProfile}
             aria-label="Редактировать"
             type="button"
             className="profile__edit-button"
@@ -29,7 +37,7 @@ function Main(props) {
         </div>
 
         <button
-          onClick={props.onAddPlace}
+          onClick={onAddPlace}
           type="button"
           aria-label="Добавить карточку"
           className="profile__add-button"
@@ -37,14 +45,14 @@ function Main(props) {
       </section>
 
       <section className="elements">
-        {props.cards.map((card) => (
+        {cards.map((card) => (
           <Card
-            setinfoCardForDelete={props.setinfoCardForDelete}
-            openDeleteCardPopup={props.openDeleteCardPopup}
-            onCardLike={props.onCardLike}
+            setinfoCardForDelete={setinfoCardForDelete}
+            openDeleteCardPopup={openDeleteCardPopup}
+            onCardLike={onCardLike}
             key={card._id}
             card={card}
-            onCardClick={props.onCardClick}
+            onCardClick={onCardClick}
           />
         ))}
       </section>
