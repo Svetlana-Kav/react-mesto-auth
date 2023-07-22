@@ -40,7 +40,7 @@ function Register({setIsInfoTooltipOpenOk,setIsInfoTooltipOpenError}) {
               className="form__input"
               placeholder="Email"
               name="email"
-              value={values.email}
+              value={values.email || ''}
               required=""
               type="email"
             />
@@ -50,7 +50,7 @@ function Register({setIsInfoTooltipOpenOk,setIsInfoTooltipOpenError}) {
               className="form__input"
               placeholder="Пароль"
               name="password"
-              value={values.password}
+              value={values.password || ''}
               required=""
               minLength={2}
               maxLength={40}

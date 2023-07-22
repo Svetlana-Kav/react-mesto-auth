@@ -43,7 +43,7 @@ function AddPlacePopup({
           required=""
           className="popup__input popup__input_type_name-card"
           type="text"
-          value={values.name}
+          value={values.name || ''}
         />
         <span className="input-name-card-error popup__form-input-error" />
       </label>
@@ -56,7 +56,7 @@ function AddPlacePopup({
           required=""
           className="popup__input popup__input_type_link-image"
           type="url"
-          value={values.link}
+          value={values.link || ''}
         />
         <span className="input-link-error popup__form-input-error" />
       </label>

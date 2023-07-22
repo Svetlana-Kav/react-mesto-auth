@@ -4,7 +4,7 @@ import Header from "./Header";
 import * as auth from "../utils/auth.js";
 import { useForm } from "../hooks/useForm";
 
-function Login({ handleLogin }) {
+function Login({ handleLogin, setUserEmail }) {
   const { values, handleChange, setValues } = useForm({});
 
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ function Login({ handleLogin }) {
       .authorize(values.password, values.email)
       .then((data) => {
         if (data.token) {
+          setUserEmail(values.email)
           setValues({ email: "", password: "" });
           handleLogin();
           navigate("/", { replace: true });
@@ -37,7 +38,7 @@ function Login({ handleLogin }) {
               name="email"
               required=""
               type="email"
-              value={values.email}
+              value={values.email || ''}
             />
             <input
               type="password"
@@ -45,7 +46,7 @@ function Login({ handleLogin }) {
               placeholder="Пароль"
               name="password"
               required=""
-              value={values.password}
+              value={values.password || ''}
               onChange={handleChange}
             />
             <button className="form__button">Войти</button>

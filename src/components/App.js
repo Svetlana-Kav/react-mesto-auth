@@ -18,7 +18,9 @@ import imageInfoTooltipOk from "../images/status-ok.svg";
 import imageInfoTooltipError from "../images/status-error.svg";
 import InfoTooltip from "./InfoTooltip";
 import * as auth from "../utils/auth.js";
-// import { handleSubmit } from "../utils/utils";
+// import { handleSubmit } from "../utils/utils"; 
+
+//У МЕНЯ СЕЙЧАС ОТОБРАЖАЕТСЯ ТОЛЬКО ОДИН ХЕДЕР, EMAIL ПРИ ПЕРВОЙ ОТРИСОВКЕ ЕСТЬ,ВОЙТИ БЕЗ АВТОРИЗАЦИИ НЕ МОГУ
 
 function App() {
   //переменные попапов
@@ -44,7 +46,7 @@ function App() {
 
   const navigate = useNavigate();
 
-  const [loggedIn, setLoggedIn] = React.useState(true);
+  const [loggedIn, setLoggedIn] = React.useState(false);
 
   //загрузка карточек и данных о пользователе при первоначальной отрисовке
   React.useEffect(() => {
@@ -106,6 +108,11 @@ function App() {
         console.log(`${err.status} ${err.text}`);
       });
   };
+
+
+
+  //handleSubmit оставляем в App? если нет, то почитать как импортировать 
+
 
   function handleSubmit(request) {
     // изменяем текст кнопки до вызова запроса
@@ -215,7 +222,7 @@ function App() {
           />
           <Route
             path="/sign-in"
-            element={<Login handleLogin={handleLogin} />}
+            element={<Login setUserEmail={setUserEmail} handleLogin={handleLogin} />}
           />
           <Route
             path="/"
